@@ -83,8 +83,7 @@ $ chmod +x webapp/bin/webapp
 
 启动第一个Sinatra容器
 ```
-$ sudo docker run -d -p 4567 --name webapp \
-  -v $PWD/webapp:/opt/webapp jamtur01/sinatra
+$ sudo docker run -d -p 4567 --name webapp jamtur01/sinatra
 ```
 
 检查Sinatra容器的日志
@@ -109,8 +108,7 @@ $ sudo docker port webapp 4567
 
 测试Sinatra应用程序
 ```
-$ curl -i -H 'Accept: application/json' \
-  -d 'name=Foo&status=Bar' http://localhost:49160/json
+$ curl -i -H 'Accept: application/json'   -d 'name=Foo&status=Bar' http://localhost:32781/json
 ```
 
 #### 扩展Sinatra应用程序来使用Redis
@@ -148,10 +146,10 @@ $ sudo docker run -d -p 6379 --name redis jamtur01/redis
 $ sudo docker port redis 6379
 ```
 
-在Ubuntu系统上安装redis客户端，并测试Redis连接
+在Ubuntu(mac也一样了)系统上安装redis客户端，并测试Redis连接
 ```
 $ sudo apt-get install -y redis-tools
-$ redis-cli -h 127.0.0.1 -p 49161
+$ ./redis-cli -h 127.0.0.1 -p 32771
 ```
 
 查看docker0网络接口
@@ -173,8 +171,9 @@ $ sudo docker run -p 4567:4567 \
 
 在宿主机上使用curl命令测试Sinatra应用程序
 ```
-$ curl -i -H 'Accept: application/json' -d 'name=Foo&status=Bar' http://localhost:4567/json
-$ curl -i http://localhost:4567/json
+$ docker port webapp 4567 #先确认本地端口
+$ curl -i -H 'Accept: application/json' -d 'name=Foo&status=Bar' http://localhost:32775/json
+$ curl -i http://localhost:32775/json
 ```
 
 #### Docker Networking
