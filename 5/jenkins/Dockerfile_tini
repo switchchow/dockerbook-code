@@ -1,0 +1,26 @@
+FROM ubuntu:20.04
+MAINTAINER switchchow switchchow@example.com
+ENV REFRESHED_AT 2020-09-30
+COPY sources.list /etc/apt/sources.list
+
+
+USER root
+RUN apt-get update -qqy && apt-get install -qqy sudo tini  curl gnupg2 apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+RUN curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg |  apt-key add -
+RUN  add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
+RUN apt-get update -qq && apt-get install -y docker-ce && apt-get install -qqy iptables ca-certificates lxc openjdk-8-jdk git-core
+VOLUME [ "/var/lib/docker" ]
+
+ENV JENKINS_HOME /opt/jenkins/data
+ENV JENKINS_MIRROR http://mirrors.jenkins-ci.org
+RUN mkdir -p $JENKINS_HOME/plugins
+COPY jenkins.war /opt/jenkins/
+COPY *.hpi $JENKINS_HOME/plugins
+
+ADD ./dockerjenkins.sh /usr/local/bin/dockerjenkins.sh
+RUN chmod +x /usr/local/bin/dockerjenkins.sh
+COPY --from=registry.icp.com:5000/multiarch/tini-static:0.18.0 /tini/tini-static-amd64 /usr/local/bin/tini
+
+EXPOSE 8080
+
+ENTRYPOINT ["/usr/local/bin/dockerjenkins.sh"]

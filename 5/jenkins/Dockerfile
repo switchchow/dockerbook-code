@@ -1,25 +1,24 @@
-FROM jenkins
-MAINTAINER james@example.com
-ENV REFRESHED_AT 2016-06-01
+FROM ubuntu:20.04
+MAINTAINER switchchow switchchow@example.com
+ENV REFRESHED_AT 2020-09-30
+COPY sources.list /etc/apt/sources.list
 
 USER root
-RUN apt-get -qq update && apt-get -qq install sudo
-RUN echo "jenkins ALL=NOPASSWD: ALL" >> /etc/sudoers
-
-RUN curl -sSL https://get.docker.com/ | sh
-RUN usermod -aG docker jenkins
-
+RUN apt-get clean &&apt-get update -qqy && apt-get install -qqy sudo tini  curl gnupg2 apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+RUN curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg |  apt-key add -
+RUN  add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
+RUN apt-get update -qq && apt-get install -y docker-ce && apt-get install -qqy iptables ca-certificates lxc openjdk-8-jdk git-core
 VOLUME [ "/var/lib/docker" ]
 
-RUN mkdir -p /var/log/jenkins && chown -R jenkins:jenkins /var/log/jenkins
-RUN mkdir -p /var/cache/jenkins && chown -R jenkins:jenkins /var/cache/jenkins
-ENV JENKINS_OPTS="--logfile=/var/log/jenkins/jenkins.log --webroot=/var/cache/jenkins/war --prefix=/jenkins"
+ENV JENKINS_HOME /opt/jenkins/data
+ENV JENKINS_MIRROR http://mirrors.jenkins-ci.org
+RUN mkdir -p $JENKINS_HOME/plugins
+COPY jenkins.war /opt/jenkins/
+COPY *.hpi $JENKINS_HOME/plugins
 
-COPY dockerjenkins.sh /usr/local/bin/dockerjenkins.sh
+ADD ./dockerjenkins.sh /usr/local/bin/dockerjenkins.sh
 RUN chmod +x /usr/local/bin/dockerjenkins.sh
 
-USER jenkins
-COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
-RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+EXPOSE 8080
 
-CMD [ "dockerjenkins.sh" ]
+ENTRYPOINT ["/usr/local/bin/dockerjenkins.sh"]

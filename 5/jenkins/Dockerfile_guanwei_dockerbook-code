@@ -1,13 +1,12 @@
-FROM jenkins
-MAINTAINER james@example.com
-ENV REFRESHED_AT 2016-06-01
+FROM ubuntu:20.04
+MAINTAINER switchchow switchchow@example.com
+ENV REFRESHED_AT 2020-09-30
+COPY sources.list /etc/apt/sources.list
 
 USER root
-RUN apt-get -qq update && apt-get -qq install sudo
+RUN apt-get -qq update && apt-get -qq install sudo curl gnupg2 apt-transport-https ca-certificates curl gnupg-agent software-properties-common
 RUN echo "jenkins ALL=NOPASSWD: ALL" >> /etc/sudoers
 
-RUN curl -sSL https://get.docker.com/ | sh
-RUN usermod -aG docker jenkins
 
 VOLUME [ "/var/lib/docker" ]
 
